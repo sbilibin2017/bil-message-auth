@@ -1,0 +1,255 @@
+basePath: /api/v1
+definitions:
+  handlers.DeviceResponse:
+    properties:
+      created_at:
+        description: |-
+          Дата и время создания устройства в формате RFC3339
+          example: 2025-08-30T12:34:56Z
+        type: string
+      device_uuid:
+        description: |-
+          Уникальный идентификатор устройства
+          example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      public_key:
+        description: |-
+          Публичный ключ устройства
+          example: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQE...
+        type: string
+      updated_at:
+        description: |-
+          Дата и время последнего обновления устройства в формате RFC3339
+          example: 2025-08-30T12:34:56Z
+        type: string
+      user_uuid:
+        description: |-
+          UUID пользователя, которому принадлежит устройство
+          example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+  handlers.LoginRequest:
+    properties:
+      password:
+        description: |-
+          Пароль пользователя
+          required: true
+          example: mySecret123
+        type: string
+      public_key:
+        description: |-
+          Публичный ключ устройства
+          required: true
+          example: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQE...
+        type: string
+      username:
+        description: |-
+          Username пользователя
+          required: true
+          example: johndoe
+        type: string
+    type: object
+  handlers.RegisterDeviceRequest:
+    properties:
+      password:
+        description: |-
+          Пароль пользователя
+          required: true
+          example: mySecret123
+        type: string
+      public_key:
+        description: |-
+          Публичный ключ устройства (raw string)
+          required: true
+          example: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQE...
+        type: string
+      username:
+        description: |-
+          Username пользователя
+          required: true
+          example: johndoe
+        type: string
+    type: object
+  handlers.RegisterUserRequest:
+    properties:
+      password:
+        description: |-
+          Пароль пользователя
+          required: true
+          example: mySecret123
+        type: string
+      username:
+        description: |-
+          Username пользователя
+          required: true
+          example: johndoe
+        type: string
+    type: object
+  handlers.UserDeviceResponse:
+    properties:
+      created_at:
+        description: |-
+          Дата и время создания устройства в формате RFC3339
+          example: 2025-08-30T12:34:56Z
+        type: string
+      device_uuid:
+        description: |-
+          Уникальный идентификатор устройства
+          example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      public_key:
+        description: |-
+          Публичный ключ устройства
+          example: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQE...
+        type: string
+      updated_at:
+        description: |-
+          Дата и время последнего обновления устройства в формате RFC3339
+          example: 2025-08-30T12:34:56Z
+        type: string
+      user_uuid:
+        description: |-
+          UUID пользователя, которому принадлежит устройство
+          example: 550e8400-e29b-41d4-a716-446655440001
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для аутентификации
+  title: auth API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Проверяет учетные данные пользователя и возвращает токен
+      parameters:
+      - description: Данные для логина
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Успешный логин, токен возвращается в теле
+        "400":
+          description: Некорректные данные запроса или неверные учетные данные
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Логин пользователя
+      tags:
+      - Auth
+  /auth/register/device:
+    post:
+      consumes:
+      - application/json
+      description: Добавляет новое устройство (публичный ключ) для существующего пользователя
+      parameters:
+      - description: Данные устройства
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterDeviceRequest'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Устройство успешно зарегистрировано
+        "400":
+          description: Некорректные данные запроса или неверные учетные данные
+        "409":
+          description: Устройство уже зарегистрировано
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Регистрация нового устройства для существующего пользователя
+      tags:
+      - Auth
+  /auth/register/user:
+    post:
+      consumes:
+      - application/json
+      description: Создаёт нового пользователя с заданными username и password
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.RegisterUserRequest'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Пользователь успешно зарегистрирован
+        "400":
+          description: Некорректные данные запроса
+        "409":
+          description: Пользователь с таким именем уже существует
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Регистрация нового пользователя
+      tags:
+      - Auth
+  /auth/user:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает данные пользователя по токену
+      parameters:
+      - description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.UserDeviceResponse'
+        "400":
+          description: Некорректный токен
+        "404":
+          description: Пользователь не найден
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Получить информацию о пользователе
+      tags:
+      - Auth
+  /auth/user/devices:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список всех устройств, зарегистрированных для пользователя
+      parameters:
+      - description: Bearer токен
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handlers.DeviceResponse'
+            type: array
+        "400":
+          description: Некорректный токен
+        "404":
+          description: Пользователь не найден
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Получить список устройств пользователя
+      tags:
+      - Auth
+swagger: "2.0"
